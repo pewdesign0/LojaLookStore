@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { discountPct, formatBRL, formatInstallments } from "@/lib/format";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, setDrawerOpen } = useCart();
+  const { isFavorite, toggle } = useFavorites();
   const discount = discountPct(product.price, product.old_price);
   const hoverImage = product.images.length > 1 ? product.images[1] : null;
+  const favorited = isFavorite(product.slug);
 
   const quickAdd = () => {
     const size = product.sizes.find((s) => s.stock > 0) ?? product.sizes[0];
@@ -25,6 +28,14 @@ export default function ProductCard({ product }: { product: Product }) {
     });
     setDrawerOpen(true);
     toast.success("Adicionado à sacola!", { description: product.name });
+  };
+
+  const toggleFavorite = () => {
+    const added = toggle(product.slug);
+    toast[added ? "success" : "message"](
+      added ? "Salvo nos favoritos!" : "Removido dos favoritos",
+      { description: product.name },
+    );
   };
 
   return (
@@ -53,7 +64,10 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
 
         {discount !== null && (
-          <span data-testid={`product-card-discount-badge-${product.slug}`} className="absolute left-3 top-3 bg-brand px-2 py-1 text-[11px] font-bold text-white">
+          <span
+            data-testid={`product-card-discount-badge-${product.slug}`}
+            className="absolute left-3 top-3 bg-brand px-2 py-1 text-[11px] font-bold text-white"
+          >
             -{discount}%
           </span>
         )}
@@ -62,6 +76,21 @@ export default function ProductCard({ product }: { product: Product }) {
             NOVIDADE
           </span>
         )}
+
+        <button
+          data-testid={`product-card-favorite-${product.slug}`}
+          aria-label={favorited ? `Remover ${product.name} dos favoritos` : `Salvar ${product.name} nos favoritos`}
+          aria-pressed={favorited}
+          onClick={(e) => {
+            e.preventDefault();
+            toggleFavorite();
+          }}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 backdrop-blur-sm transition-[transform,background-color] hover:scale-110 hover:bg-white"
+        >
+          <Heart
+            className={`h-4 w-4 transition-colors ${favorited ? "fill-brand text-brand" : "text-stone-700"}`}
+          />
+        </button>
 
         <button
           data-testid={`product-card-quick-add-${product.slug}`}

@@ -1,23 +1,15 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, Search, ShoppingBag } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { buttonVariants } from "@/components/ui/button";
 import SearchOverlay from "@/components/layout/SearchOverlay";
-
-export const NAV_LINKS = [
-  { label: "Novidades", to: "/novidades" },
-  { label: "Vestidos", to: "/categoria/vestidos" },
-  { label: "Blusas", to: "/categoria/blusas" },
-  { label: "Calças", to: "/categoria/calcas" },
-  { label: "Shorts & Saias", to: "/categoria/shorts-e-saias" },
-  { label: "Beachwear", to: "/categoria/beachwear" },
-  { label: "Outlet", to: "/outlet", highlight: true },
-];
+import { NAV_LINKS } from "@/components/layout/navLinks";
 
 export default function Header() {
   const { count, setDrawerOpen } = useCart();
+  const { count: favoritesCount } = useFavorites();
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -50,6 +42,13 @@ export default function Header() {
                     {link.label}
                   </Link>
                 ))}
+                <Link
+                  to="/favoritos"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-2 py-2.5 text-xs font-medium uppercase tracking-[0.15em] hover:text-brand"
+                >
+                  Favoritos
+                </Link>
               </nav>
             </SheetContent>
           </Sheet>
@@ -63,7 +62,7 @@ export default function Header() {
                 className={({ isActive }) =>
                   `border-b-2 pb-0.5 text-[11px] font-medium uppercase tracking-[0.15em] transition-colors hover:text-brand ${
                     isActive ? "border-brand text-brand" : "border-transparent text-stone-800"
-                  } ${link.highlight ? "hover:text-brand" : ""}`
+                  }`
                 }
               >
                 {link.label}
@@ -79,7 +78,7 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Right: search + cart */}
+        {/* Right: search + favorites + cart */}
         <div className="flex items-center justify-end gap-4">
           <button
             data-testid="header-search-button"
@@ -89,6 +88,22 @@ export default function Header() {
           >
             <Search className="h-5 w-5" />
           </button>
+          <Link
+            to="/favoritos"
+            data-testid="header-favorites-link"
+            aria-label="Ver meus favoritos"
+            className="relative transition-colors hover:text-brand"
+          >
+            <Heart className="h-5 w-5" />
+            {favoritesCount > 0 && (
+              <span
+                data-testid="header-favorites-count-badge"
+                className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white"
+              >
+                {favoritesCount}
+              </span>
+            )}
+          </Link>
           <button
             data-testid="header-cart-button"
             aria-label="Abrir sacola de compras"
@@ -108,7 +123,11 @@ export default function Header() {
         </div>
       </div>
 
-      <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} onSearch={(q) => navigate(`/busca?q=${encodeURIComponent(q)}`)} />
+      <SearchOverlay
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSearch={(q) => navigate(`/busca?q=${encodeURIComponent(q)}`)}
+      />
     </header>
   );
 }

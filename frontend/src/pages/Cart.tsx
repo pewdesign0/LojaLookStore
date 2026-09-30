@@ -7,6 +7,7 @@ import { apiPost } from "@/lib/api";
 import type { CouponValidation } from "@/lib/types";
 import { useCart } from "@/lib/cart";
 import { formatBRL, FREE_SHIPPING_THRESHOLD } from "@/lib/format";
+import ShippingCalculator from "@/components/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -171,6 +172,10 @@ export default function Cart() {
             *Frete grátis acima de R$ 499 para SC, SP, MG, PR, RS e RJ. Pague no PIX e ganhe 5% de
             desconto adicional.
           </p>
+
+          <div className="mt-5">
+            <ShippingCalculator subtotal={subtotal - couponDiscount} testIdPrefix="cart-shipping" />
+          </div>
 
           <Link
             to="/checkout"

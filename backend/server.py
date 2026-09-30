@@ -63,10 +63,12 @@ async def get_status_checks():
 from routers.catalog import router as catalog_router
 from routers.orders import router as orders_router
 from routers.misc import router as misc_router
+from routers.admin import router as admin_router
 
 api_router.include_router(catalog_router)
 api_router.include_router(orders_router)
 api_router.include_router(misc_router)
+api_router.include_router(admin_router)
 
 # Include the router in the main app
 app.include_router(api_router)

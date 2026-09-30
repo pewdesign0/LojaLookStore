@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronDown, ChevronRight, PackageCheck, Ruler, Truck } from "lucide-react";
+import { ChevronDown, ChevronRight, Heart, Ruler } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart";
-import { cepInfo, discountPct, formatBRL, formatInstallments, FREE_SHIPPING_THRESHOLD, FREE_SHIPPING_STATES } from "@/lib/format";
-import ProductCard from "@/components/product/ProductCard";
+import { useFavorites } from "@/lib/favorites";
+import { discountPct, formatBRL, formatInstallments, FREE_SHIPPING_THRESHOLD, FREE_SHIPPING_STATES } from "@/lib/format";
 import ProductRow from "@/components/product/ProductRow";
+import ShippingCalculator from "@/components/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 
 function Accordion({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -27,11 +28,10 @@ function Accordion({ title, children, defaultOpen = false }: { title: string; ch
 export default function ProductDetail() {
   const { slug } = useParams();
   const { addItem, setDrawerOpen, subtotal: cartSubtotal } = useCart();
+  const { isFavorite, toggle } = useFavorites();
   const [imageIndex, setImageIndex] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
-  const [cep, setCep] = useState("");
-  const [cepResult, setCepResult] = useState<ReturnType<typeof cepInfo> & { shipping: number } | null>(null);
 
   const { data: product, isLoading, isError } = useQuery({
     queryKey: ["product", slug],
@@ -98,14 +98,12 @@ export default function ProductDetail() {
     toast.success("Adicionado à sacola!", { description: `${product.name} · ${selectedColor} · Tam ${size}` });
   };
 
-  const calculateShipping = () => {
-    const info = cepInfo(cep, cartSubtotal + product.price);
-    if (!info) {
-      toast.error("Informe um CEP válido com 8 dígitos.");
-      return;
-    }
-    const shipping = info.freeEligible ? 0 : 24.9;
-    setCepResult({ ...info, shipping });
+  const toggleFavorite = () => {
+    const added = toggle(product.slug);
+    toast[added ? "success" : "message"](
+      added ? "Salvo nos favoritos!" : "Removido dos favoritos",
+      { description: product.name },
+    );
   };
 
   return (
@@ -222,47 +220,33 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <Button
-            data-testid="pdp-add-to-cart-button"
-            size="lg"
-            className="mt-8 w-full"
-            onClick={addToCart}
-          >
-            Adicionar à Sacola — {formatBRL(product.price)}
-          </Button>
-
-          {/* Shipping calculator */}
-          <div className="mt-6 border border-stone-200 p-4">
-            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
-              <Truck className="h-4 w-4" /> Calcular frete e prazo
-            </p>
-            <div className="mt-3 flex gap-2">
-              <input
-                data-testid="pdp-cep-input"
-                value={cep}
-                onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="CEP (ex.: 88015000)"
-                inputMode="numeric"
-                className="w-full border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-foreground"
+          <div className="mt-8 flex gap-3">
+            <Button
+              data-testid="pdp-add-to-cart-button"
+              size="lg"
+              className="flex-1"
+              onClick={addToCart}
+            >
+              Adicionar à Sacola — {formatBRL(product.price)}
+            </Button>
+            <button
+              data-testid="pdp-favorite-button"
+              aria-label={isFavorite(product.slug) ? "Remover dos favoritos" : "Salvar nos favoritos"}
+              aria-pressed={isFavorite(product.slug)}
+              onClick={toggleFavorite}
+              className="flex w-14 shrink-0 items-center justify-center border border-stone-300 transition-colors hover:border-brand"
+            >
+              <Heart
+                className={`h-5 w-5 transition-colors ${
+                  isFavorite(product.slug) ? "fill-brand text-brand" : "text-stone-700"
+                }`}
               />
-              <Button variant="outline" data-testid="pdp-cep-calculate-button" onClick={calculateShipping}>
-                Calcular
-              </Button>
-            </div>
-            {cepResult && (
-              <div className="mt-3 space-y-1.5 text-xs text-stone-600" data-testid="pdp-cep-result">
-                <p className="font-medium text-foreground">
-                  {cepResult.region} — {cep.replace(/^(\d{5})(\d{3})$/, "$1-$2")}
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <PackageCheck className="h-3.5 w-3.5 text-green-700" />
-                  {cepResult.shipping === 0
-                    ? "PAC — GRÁTIS (compra acima de R$ 499)"
-                    : `PAC — ${formatBRL(cepResult.shipping)} · ${cepResult.pacDays} dias úteis`}
-                </p>
-                <p>Sedex — R$ 34,90 · {cepResult.sedexDays} dias úteis</p>
-              </div>
-            )}
+            </button>
+          </div>
+
+          {/* Shipping calculator (shared widget, also used in the cart) */}
+          <div className="mt-6">
+            <ShippingCalculator subtotal={cartSubtotal + product.price} testIdPrefix="pdp" />
           </div>
 
           {/* Details accordions */}

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { NAV_LINKS } from "@/components/layout/Header";
+import { apiGet } from "@/lib/api";
+import type { Product } from "@/lib/types";
+import { formatBRL } from "@/lib/format";
+import { NAV_LINKS } from "@/components/layout/navLinks";
 
 interface SearchOverlayProps {
   open: boolean;
@@ -12,17 +16,39 @@ interface SearchOverlayProps {
 
 export default function SearchOverlay({ open, onOpenChange, onSearch }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!open) setQuery("");
+    if (!open) {
+      setQuery("");
+      setDebounced("");
+    }
   }, [open]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(query.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Live suggestions: only fires once there are 2+ characters.
+  const { data: suggestions, isFetching } = useQuery({
+    queryKey: ["search-suggestions", debounced],
+    queryFn: () => apiGet<Product[]>(`/catalog/products?q=${encodeURIComponent(debounced)}&limit=5`),
+    enabled: open && debounced.length >= 2,
+    staleTime: 30_000,
+  });
 
   const submit = () => {
     const q = query.trim();
     if (!q) return;
     onOpenChange(false);
     onSearch(q);
+  };
+
+  const goTo = (path: string) => {
+    onOpenChange(false);
+    navigate(path);
   };
 
   return (
@@ -53,26 +79,80 @@ export default function SearchOverlay({ open, onOpenChange, onSearch }: SearchOv
             Buscar
           </button>
         </form>
-        <div className="mt-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-stone-500">
-            Buscas populares
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {NAV_LINKS.map((link) => (
-              <button
-                key={link.to}
-                data-testid={`search-overlay-suggestion-${link.label.toLowerCase().replace(/[^a-z]+/g, "-")}`}
-                onClick={() => {
-                  onOpenChange(false);
-                  navigate(link.to);
-                }}
-                className="border border-stone-200 px-3 py-1.5 text-xs uppercase tracking-wide text-stone-700 transition-colors hover:border-brand hover:text-brand"
-              >
-                {link.label}
-              </button>
-            ))}
+
+        {/* Live product suggestions */}
+        {debounced.length >= 2 && (
+          <div className="mt-4" data-testid="search-overlay-suggestions">
+            {isFetching && !suggestions ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="flex gap-3">
+                    <div className="h-16 w-12 animate-pulse bg-stone-200/70" />
+                    <div className="flex-1 space-y-2 py-1">
+                      <div className="h-3 w-3/4 animate-pulse bg-stone-200/70" />
+                      <div className="h-3 w-1/3 animate-pulse bg-stone-200/70" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : suggestions && suggestions.length > 0 ? (
+              <div className="space-y-1">
+                {suggestions.map((product) => (
+                  <button
+                    key={product.id}
+                    data-testid={`search-suggestion-${product.slug}`}
+                    onClick={() => goTo(`/produto/${product.slug}`)}
+                    className="flex w-full items-center gap-3 p-1.5 text-left transition-colors hover:bg-stone-50"
+                  >
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="h-16 w-12 shrink-0 object-cover"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="line-clamp-1 block text-xs font-medium uppercase tracking-wide">
+                        {product.name}
+                      </span>
+                      <span className="mt-1 block text-xs text-stone-500">{formatBRL(product.price)}</span>
+                    </span>
+                  </button>
+                ))}
+                <button
+                  data-testid="search-overlay-see-all-button"
+                  onClick={submit}
+                  className="mt-2 w-full border border-stone-200 py-2 text-[11px] font-medium uppercase tracking-[0.15em] transition-colors hover:border-foreground"
+                >
+                  Ver todos os resultados
+                </button>
+              </div>
+            ) : (
+              <p className="py-3 text-xs text-stone-500" data-testid="search-overlay-no-results">
+                Nenhum produto encontrado para “{debounced}”.
+              </p>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Popular categories (hidden while showing suggestions) */}
+        {debounced.length < 2 && (
+          <div className="mt-5">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-stone-500">
+              Buscas populares
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {NAV_LINKS.map((link) => (
+                <button
+                  key={link.to}
+                  data-testid={`search-overlay-suggestion-${link.label.toLowerCase().replace(/[^a-z]+/g, "-")}`}
+                  onClick={() => goTo(link.to)}
+                  className="border border-stone-200 px-3 py-1.5 text-xs uppercase tracking-wide text-stone-700 transition-colors hover:border-brand hover:text-brand"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
