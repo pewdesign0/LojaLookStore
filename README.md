@@ -1,195 +1,246 @@
-# farm-ts
+# Loja Look Store
 
-Minimal split backend/frontend starter: **FastAPI + MongoDB** behind a
-**Vite + React 19 + TypeScript** frontend, joined by a small typed fetch layer
-over `/api`. This is a bare skeleton — no app features are implemented. Build on
-top of it.
+E-commerce de moda feminina completo — vitrine, catálogo, carrinho, checkout e painel
+administrativo. Projeto full-stack com **FastAPI + MongoDB** no backend e
+**React 19 + Vite + TypeScript + Tailwind CSS v4** no frontend, com interface em
+português (pt-BR) e preços em real.
 
-## Layout
+> Projeto demonstrativo, criado para fins de estudo. O checkout é simulado —
+> nenhum pagamento real é processado e nenhum dado de cartão é armazenado.
 
-```
-farm-ts/
-  backend/   FastAPI + motor (async MongoDB) + Pydantic v2 — python, /root/.venv
-  frontend/  Vite + React 19 + Tailwind v4 + shadcn/ui (TypeScript strict)
-  tests/     Playwright e2e workspace (pre-scaffolded)
-```
+---
 
-## Running
+## Funcionalidades
 
-Two separate processes, managed by supervisor in the pod (see "Pod conventions"
-below); to run them by hand from two terminals instead:
+**Loja**
+- Home com barra de avisos rotativa, carrossel editorial, tiles de categoria e quatro
+  vitrines de produtos (Mais Vendidas, Coleção Jeans, Destaque e Trends)
+- Catálogo com filtros de tamanho, cor, linha e faixa de preço, além de ordenação
+  (mais vendidos, lançamentos, menor e maior preço)
+- Página de produto com galeria, seleção de cor e tamanho, cálculo de frete por CEP e
+  abas de descrição, composição e trocas
+- Busca com sugestões ao vivo (miniatura + preço enquanto você digita)
+- Lista de favoritos com contador no cabeçalho, persistida no navegador
+- Sacola em drawer lateral e página completa, com medidor de frete grátis
+- Checkout com dados pessoais, endereço, PIX (5% de desconto) ou cartão em até 6x
+- Confirmação do pedido com número, previsão de entrega e chave PIX copiável
+- Cupom de desconto, newsletter, banner de cookies (LGPD) e botão de WhatsApp
 
-```bash
-cd backend && uvicorn server:app --host 0.0.0.0 --port 8001 --reload   # http://localhost:8001
-cd frontend && yarn dev                                                # http://localhost:3000
-```
+**Painel administrativo** (`/admin`)
+- Login por senha com sessão em cookie `httpOnly`
+- Cadastro, edição e exclusão de produtos
+- Controle de quais vitrines da home exibem cada produto
 
-## The `/api` proxy convention
+**Regras de negócio** (centralizadas em `backend/lib/pricing.py`)
+- Cupom `GBVIP`: 10% de desconto no subtotal
+- PIX: 5% de desconto aplicado após o cupom
+- Frete grátis acima de R$ 499 para SC, SP, PR, RS, MG e RJ; senão R$ 24,90
+- Parcelamento em até 6x sem juros
 
-Every backend route lives under `/api` (the backend mounts one
-`APIRouter(prefix="/api")`), and the frontend dev server
-(`frontend/vite.config.ts`) proxies `/api/*` to `http://localhost:8001`. So
-frontend code always calls a **relative** path — `apiGet("/status")` →
-`/api/status` — and never an absolute backend URL. The same code works in dev
-(via the Vite proxy) and in production (once both are served behind a single
-origin).
+Os preços são **sempre recalculados no servidor** a partir do banco de dados no momento
+em que o pedido é criado — valores enviados pelo navegador nunca são confiados.
 
-## Backend
+---
 
-FastAPI, async throughout. `python` is the app venv interpreter
-(`/root/.venv/bin/python`); backend deps are pip-installed from
-`backend/requirements.txt`.
+## Stack
 
-- **Entry point**: `backend/server.py` — creates `app = FastAPI()`, creates
-  `api_router = APIRouter(prefix="/api")`, registers routes **on the router**,
-  and calls `app.include_router(api_router)` at the bottom. CORS middleware is
-  added from `CORS_ORIGINS`. Never hang a route directly off `app` — it would
-  land outside `/api` and the Vite proxy would not reach it.
-- **The route pattern** (copy `status` in `server.py`):
-  1. a Pydantic model per request body and per response
-     (`StatusCheckCreate` / `StatusCheck`);
-  2. an `async def` handler decorated with
-     `@api_router.post("/status", response_model=StatusCheck)`;
-  3. `await` the motor call inside it.
-  FastAPI validates the request against the Pydantic model before your handler
-  runs — a malformed body never reaches your code, it gets an automatic `422`
-  with a `{"detail": [...]}` body.
-- **Growing the backend**: as `server.py` gets crowded, move models to
-  `backend/models/` and routers to `backend/routers/` (one module per resource,
-  each exporting its own `APIRouter`, mounted from `server.py` via
-  `api_router.include_router(...)` or `app.include_router(...)` with the `/api`
-  prefix preserved).
-- **MongoDB**: import the shared handle — `from lib.db import client, db`
-  (`backend/lib/db.py` self-loads `.env` before reading env). Use it from
-  `server.py`, every router, and standalone scripts like `seed.py`; never
-  construct another `AsyncIOMotorClient`. Collections are attributes:
-  `await db.status_checks.insert_one(...)`, `await db.status_checks.find().to_list(1000)`.
-  Motor connects lazily, so importing `server` never blocks on Mongo. `pymongo`
-  is installed too if you need a sync client in a script.
-- **Ids**: documents use a string `id` (`uuid4`) field, not Mongo's `ObjectId`
-  — `ObjectId` is not JSON-serializable and leaks into response bodies. Keep the
-  `uuid4` default-factory pattern from `StatusCheck`.
-- **Config**: `backend/.env` — `MONGO_URL` (connection string), `DB_NAME`
-  (database name), `CORS_ORIGINS`. `server.py` loads it with `python-dotenv`
-  above its local imports, and `lib/db.py` self-loads it so standalone scripts
-  inherit it too. The pod runs `mongod` locally, so `MONGO_URL` points at
-  `localhost`. Add new secrets/config here; read them with `os.environ`.
-- **Dates**: `backend/lib/dates.py` — `today_iso(tz=None)`. The pod clock is
-  UTC; anchor "today" server-side with this, never with client-side date math.
-- **Interactive check**: `cd /app/backend && python -c 'import server'` catches
-  syntax/import errors without waiting for the supervisor log.
+| Camada | Tecnologias |
+|---|---|
+| Backend | FastAPI, Motor (MongoDB async), Pydantic v2, Uvicorn |
+| Frontend | React 19, Vite, TypeScript (strict), Tailwind CSS v4, shadcn/ui, TanStack Query, React Router, Motion |
+| Banco | MongoDB |
+| Tipografia | Playfair Display + DM Sans (via `@fontsource`) |
 
-## Frontend
+Requisitos: **Node 20+** (desenvolvido no 24), **Python 3.11+** e uma instância de
+**MongoDB** acessível.
 
-- Vite + React 19 + TypeScript strict, dev server on port `3000`.
-- Tailwind CSS v4 (via the `@tailwindcss/vite` plugin — no separate
-  `tailwind.config.js` needed) + shadcn/ui, initialized with the `base-nova`
-  style and `neutral` base color, `@` path alias (`@/*` → `src/*`) wired in both
-  `tsconfig.app.json`/`tsconfig.json` and `vite.config.ts`.
-- `react-router-dom` and `motion` are preinstalled — don't re-add them. `src/App.tsx`
-  is the `<Routes>` table and nothing else; screens live in `src/pages/*.tsx` and are
-  imported as `@/pages/<Name>`. `src/pages/Home.tsx` ships as the worked example. Add
-  a `<Route>` for every page you write, in the same edit that creates the page — a
-  page with no route is unreachable, and any URL without a matching `<Route>` renders a
-  **blank page** — `<Routes>` matches nothing and mounts nothing.
-- Components installed under `src/components/ui/`: button, card, input, label,
-  select, dialog, sheet, tabs, badge, calendar, sonner, textarea, table, popover,
-  dropdown-menu, checkbox. Add more with `npx shadcn@latest add <component>`.
-- `src/lib/api.ts` — the typed fetch layer: `apiGet<T>`, `apiPost<T>`,
-  `apiPut<T>`, `apiPatch<T>`, `apiDelete<T>`, all relative to base `/api`,
-  throwing `ApiError` (with `status` and the parsed body) on any non-2xx.
-  **Nothing infers across the Python boundary** — you declare the response type
-  yourself as a TS interface mirroring the endpoint's Pydantic model, and keeping
-  the two in sync is a manual discipline. When you change a Pydantic model,
-  change its TS interface in the same edit.
-- `src/pages/Home.tsx` is a minimal example of the wiring: TanStack Query's `useQuery`
-  with `apiGet<StatusCheck[]>("/status")` as the `queryFn`. It is a **non-blocking
-  connectivity probe**, not a proof of the round trip — the result is deliberately
-  discarded so the splash renders identically with no backend. `apiGet<T>` does no
-  runtime validation either; `T` is your assertion, not a check. See the
-  static-preview rule in `TEMPLATE.md` §4 for why no page may be gated on a fetch.
+---
 
-## TypeScript
-
-`frontend/tsconfig.app.json` / `tsconfig.node.json` have `strict: true`. In the
-pod:
+## Instalação
 
 ```bash
-cd frontend && yarn typecheck
+git clone https://github.com/pewdesign0/LojaLookStore.git
+cd LojaLookStore
 ```
 
-— plain `tsc --noEmit` run from `frontend/` checks ZERO files (root tsconfig uses
-project references with `"files": []`) and exits 0 even with type errors. Always
-use `-b` for the frontend. Lint with `cd frontend && yarn lint` (oxlint).
-
-## Data fetching
-
-TanStack Query is wired: `QueryClientProvider` in `src/main.tsx`, `useQuery` demo
-in `src/pages/Home.tsx` (see above). Use `useQuery`/`useMutation`, not
-fetch-in-`useEffect`.
-
-## Completion gate (tier 1)
-
-When the build is complete, run tier 1 once, all in the same turn: a curl smoke
-over the key `/api` endpoints (assert status AND a response field, plus one
-negative case), `cd frontend && yarn typecheck`, and ONE happy-path browser pass
-through the core user journey. Clean on all three → finish; any failure is a real
-bug — fix it, re-run the failed check, and escalate to the testing subagent.
-No routine typecheck/lint/smoke passes during the build — tier 1 runs exactly once.
-
-
-## Testing
-
-Two lanes.
-
-**Backend (pytest)** — specs in `backend/tests/` as `test_*.py`, run with:
+### 1. Backend
 
 ```bash
-cd /app/backend && pytest
+cd backend
+
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+cp .env.example .env             # depois edite os valores
 ```
 
-`backend/pytest.ini` is canonical: `addopts = -n 2 --dist loadscope` (pytest-xdist,
-already parallel — do not pass your own `-n`) and `asyncio_mode = auto` (so
-`async def test_...` needs no marker). Serial is `-n 0`, **never**
-`-p no:xdist` (that errors, because `addopts` still passes `-n`/`--dist`).
-`backend/tests/conftest.py` is pre-scaffolded — a sync `client` fixture
-(`httpx.Client` rooted at `/api`), an async `aclient`, and an `api_url()` helper,
-all pointed at `BACKEND_URL` (default `http://localhost:8001`). Tests hit the
-live uvicorn process, so the app under test is the one the browser sees. Add
-app-specific fixtures below the marker; do not re-create the file.
+Preencha o `backend/.env`:
 
-**Frontend (Playwright)** — `/app/tests/` is pre-scaffolded:
-`playwright.config.ts` (canonical — edit the marked lines only),
-`fixtures/helpers.ts`, and a `package.json` that resolves
-`@playwright/test@1.62.0` (node_modules baked into the image). Write specs into
-`tests/e2e/`. Do NOT re-create the config/helpers or install/upgrade playwright —
-matching Chromium browsers live at `/pw-browsers`.
+```env
+MONGO_URL="mongodb://localhost:27017"
+DB_NAME="app"
+CORS_ORIGINS="*"
+ADMIN_PASSWORD="escolha-uma-senha"
+```
 
-The backend lane is pytest: this template's backend is Python, so `vitest` does
-not apply to it.
+Popule o catálogo (30 produtos e 8 categorias). O script é idempotente — pode rodar
+novamente sempre que quiser restaurar os dados iniciais:
 
-## Pod conventions
+```bash
+python seed.py
+```
 
-This template runs under supervisord in the Emergent agent pod — supersedes any
-local-run instructions above.
+Suba a API:
 
-- Backend, frontend, and `mongod` are each a supervisor program. After code or
-  config changes, restart and wait for readiness:
+```bash
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+```
 
-  ```bash
-  sudo supervisorctl restart frontend backend
-  until curl -sf -o /dev/null http://localhost:3000; do sleep 2; done
-  ```
+A documentação interativa fica em `http://localhost:8001/docs`.
 
-- Status, only after a restart you triggered:
-  `sudo supervisorctl status frontend backend`. Logs:
-  `/var/log/supervisor/backend.err.log`, `backend.out.log`,
-  `frontend.err.log`.
-- App in a browser: the pod's preview URL (frontend, port `3000`). Backend API
-  directly at port `8001`.
-- `mongod` runs locally in the pod (`--bind_ip_all`); `MONGO_URL` in
-  `backend/.env` points at `localhost`, no separate Mongo container.
-- Both dev servers hot-reload on file edits (uvicorn `--reload` for the backend,
-  Vite HMR for the frontend); no rebuild step needed for normal iteration. A
-  restart is still needed after changing `.env`, `requirements.txt`, or
-  `vite.config.ts`.
+### 2. Frontend
+
+Em outro terminal:
+
+```bash
+cd frontend
+yarn install
+yarn dev
+```
+
+A loja abre em **http://localhost:3000**. O Vite encaminha `/api/*` para a porta 8001,
+então o frontend usa apenas caminhos relativos — não há URL de backend fixa no código.
+
+### 3. Acesso ao painel
+
+Abra `http://localhost:3000/admin` e entre com a senha definida em `ADMIN_PASSWORD`.
+
+---
+
+## Comandos
+
+**Frontend** (dentro de `frontend/`)
+
+```bash
+yarn dev          # servidor de desenvolvimento
+yarn build        # build de produção em dist/
+yarn typecheck    # checagem de tipos do TypeScript
+yarn lint         # análise estática (oxlint)
+```
+
+**Backend** (dentro de `backend/`)
+
+```bash
+uvicorn server:app --reload --port 8001   # servidor de desenvolvimento
+python seed.py                            # recria o catálogo
+pytest                                    # testes da API
+```
+
+---
+
+## Estrutura
+
+```
+backend/
+  server.py          bootstrap do FastAPI; monta o router /api
+  seed.py            popula produtos e categorias
+  lib/
+    db.py            cliente MongoDB compartilhado e índices
+    pricing.py       cupons, desconto PIX e regras de frete
+    dates.py         datas ancoradas no servidor
+  models/            modelos Pydantic (catálogo e pedidos)
+  routers/           catalog, orders, misc e admin
+  tests/             testes com pytest
+
+frontend/
+  src/
+    App.tsx          tabela de rotas
+    pages/           Home, Catalog, ProductDetail, Cart, Checkout,
+                     OrderSuccess, Favorites, Admin, NotFound
+    components/
+      layout/        cabeçalho, rodapé, sacola, busca e avisos
+      home/          carrossel, tiles e newsletter
+      product/       card e carrossel de produtos
+      ui/            componentes shadcn/ui
+    lib/
+      api.ts         camada de fetch tipada sobre /api
+      cart.tsx       estado da sacola (context + localStorage)
+      favorites.tsx  estado dos favoritos
+      format.ts      formatação em BRL e constantes de preço
+      types.ts       interfaces que espelham os modelos Pydantic
+    index.css        tema Tailwind, fontes e animações
+```
+
+Toda rota do backend vive sob o prefixo `/api`, e o frontend a consome por caminho
+relativo através da camada em `src/lib/api.ts`.
+
+---
+
+## API
+
+Todos os endpoints usam o prefixo `/api`.
+
+### Catálogo
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/catalog/categories` | Lista as categorias |
+| `GET` | `/catalog/products` | Lista produtos com filtros |
+| `GET` | `/catalog/products/{slug}` | Detalhe de um produto |
+
+Parâmetros de `/catalog/products`: `category`, `line`, `q`, `jeans`, `limit`,
+`flag` (`novidade`, `mais_vendida`, `destaque` ou `trends`) e
+`sort` (`relevance`, `newest`, `price_asc` ou `price_desc`).
+
+### Pedidos e loja
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/orders` | Cria o pedido e recalcula os preços no servidor |
+| `GET` | `/orders/{id}` | Consulta um pedido |
+| `POST` | `/coupons/validate` | Valida um cupom |
+| `POST` | `/newsletter` | Inscreve um e-mail |
+
+### Administração
+
+Exigem o cookie de sessão; sem ele a resposta é `401`.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/admin/login` | Autentica e define o cookie |
+| `GET` | `/admin/me` | Informa se a sessão é válida |
+| `POST` | `/admin/logout` | Encerra a sessão |
+| `GET` | `/admin/products` | Lista todos os produtos |
+| `POST` | `/admin/products` | Cria um produto |
+| `PATCH` | `/admin/products/{id}` | Atualiza um produto |
+| `DELETE` | `/admin/products/{id}` | Remove um produto |
+
+---
+
+## Rotas da loja
+
+| Caminho | Tela |
+|---|---|
+| `/` | Home |
+| `/produtos` | Todos os produtos |
+| `/categoria/:slug` | Produtos de uma categoria |
+| `/novidades` | Lançamentos |
+| `/outlet` | Peças com desconto |
+| `/busca?q=` | Resultados da busca |
+| `/produto/:slug` | Detalhe do produto |
+| `/favoritos` | Lista de desejos |
+| `/carrinho` | Sacola |
+| `/checkout` | Finalização |
+| `/pedido/:id` | Confirmação |
+| `/admin` | Painel administrativo |
+
+---
+
+## Segurança
+
+- O `backend/.env` **não** é versionado. Use o `backend/.env.example` como modelo.
+- Troque o `ADMIN_PASSWORD` antes de publicar a loja.
+- Em produção, defina `CORS_ORIGINS` com o domínio real em vez de `*`.
+- O checkout é uma simulação: não há integração com adquirente e nenhum dado de
+  cartão é persistido.
