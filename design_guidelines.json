@@ -1,0 +1,258 @@
+{
+  "theme": "light",
+  "archetype": "LUXURY & EDITORIAL FASHION (Catarinense Chic - Gatabakana)",
+  "language": "pt-BR",
+  "currency": "BRL",
+  "colors": {
+    "primary": "#1A1A1A",
+    "accent": "#C44837",
+    "on_accent": "#FFFFFF",
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#FAFAF7",
+        "on_bg": "#1A1A1A",
+        "on_bg_muted": "#555555",
+        "roles": {
+          "link": "#1A1A1A",
+          "error": "#B91C1C",
+          "success": "#15803D",
+          "discount_badge": "#C44837",
+          "installment_text": "#4A4A4A"
+        }
+      },
+      {
+        "name": "announcement_bar",
+        "kind": "solid",
+        "bg": "#111111",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#D1D5DB",
+        "roles": {
+          "highlight": "#FACC15"
+        }
+      },
+      {
+        "name": "header_nav",
+        "kind": "glass",
+        "contrast_against": "#FFFFFF",
+        "guarantee": "backdrop-blur-md bg-white/95 border-b border-stone-200/80 shadow-xs",
+        "on_bg": "#111111",
+        "on_bg_muted": "#525252",
+        "roles": {
+          "active_tab": "#C44837"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#1A1A1A",
+        "on_bg_muted": "#525252",
+        "roles": {
+          "border": "#E5E5E0"
+        }
+      },
+      {
+        "name": "product_card",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#171717",
+        "on_bg_muted": "#525252",
+        "roles": {
+          "price_original": "#737373",
+          "price_sale": "#111111",
+          "installments": "#3F3F46",
+          "badge_bg": "#C44837",
+          "badge_text": "#FFFFFF"
+        }
+      },
+      {
+        "name": "hero_banner",
+        "kind": "image",
+        "contrast_against": "#111111",
+        "guarantee": "scrim: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.1) 100%)",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#F3F4F6",
+        "roles": {
+          "badge": "#FFFFFF",
+          "cta_btn": "#FFFFFF",
+          "cta_btn_text": "#111111"
+        }
+      },
+      {
+        "name": "newsletter_section",
+        "kind": "solid",
+        "bg": "#F5F3EF",
+        "on_bg": "#1A1A1A",
+        "on_bg_muted": "#4B5563"
+      },
+      {
+        "name": "footer",
+        "kind": "solid",
+        "bg": "#141414",
+        "on_bg": "#F9FAFB",
+        "on_bg_muted": "#9CA3AF",
+        "roles": {
+          "link_hover": "#FFFFFF",
+          "subtext": "#6B7280"
+        }
+      },
+      {
+        "name": "cart_drawer",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#171717",
+        "on_bg_muted": "#525252",
+        "roles": {
+          "free_shipping_progress": "#16A34A"
+        }
+      }
+    ]
+  },
+  "typography": {
+    "font_heading": "'Playfair Display Variable', serif",
+    "font_body": "'DM Sans Variable', sans-serif",
+    "font_mono": "'JetBrains Mono Variable', monospace",
+    "scale_px": {
+      "display": 56,
+      "h1": 42,
+      "h2": 32,
+      "h3": 24,
+      "h4": 18,
+      "body": 16,
+      "caption": 14
+    },
+    "rules": {
+      "headings": "font-serif tracking-tight leading-tight",
+      "labels_badges": "uppercase font-medium tracking-[0.15em] text-xs",
+      "prices": "font-sans font-bold tracking-tight",
+      "installments": "text-xs font-normal text-stone-600"
+    }
+  },
+  "entry_surfaces": {
+    "/": "editorial fashion layout — rotating ticker top, sticky luxury nav, full-width editorial hero slider (OUTLET 50%, Lançamento Ibiza, Seleção Superjeans), category visual cards, product carousels (Mais Vendidas, Jeans 50% OFF, Trends), newsletter banner, SEO storytelling footer",
+    "/produtos": "catalog split layout — collapsible faceted filter sidebar (categoria, tamanho, cor, faixa de preço, linha) left, responsive 3-4 column fashion product grid right with sort selector",
+    "/produto/:slug": "product detail split — high-res multi-angle image gallery left (sticky thumbnails + main image with zoom), purchase panel right (title, reference code, rating stars, price with 6x installments, color swatches, size selector P/M/G/GG with size guide drawer, CEP shipping calculator, accordion details, add-to-cart button)",
+    "/carrinho": "cart summary split — cart item line list with qty counter + remove left, order summary panel right with coupon input (GBVIP), CEP calculation, subtotal, and checkout CTA",
+    "/checkout": "one-step seamless checkout — customer identification, delivery address, shipping option selection, payment tabs (PIX 5% OFF with QR code simulator / Cartão de Crédito 6x sem juros simulator / Boleto), and order review summary panel",
+    "/pedido-confirmado": "order celebration card — verified badge, generated order number, delivery estimate, PIX copy-paste key or card authorization details, item recap, and continue shopping CTA"
+  },
+  "visual_enhancers": {
+    "editorial_ribbon": "Slow smooth top marquee announcing 'PARCELE EM ATÉ 6X SEM JUROS • CUPOM GBVIP COM 10% OFF • PIX COM 5% DE DESCONTO • FRETE GRÁTIS ACIMA DE R$499'",
+    "whatsapp_float": "Sticky bottom-right emerald WhatsApp support bubble with tooltip 'Atendimento Gatabakana'",
+    "cookie_banner": "Floating bottom glassmorphic LGPD consent banner in Portuguese (BR)",
+    "free_shipping_meter": "Dynamic progress bar in cart drawer: 'Faltam R$ XX,XX para FRETE GRÁTIS (Regiões Sul e Sudeste)'",
+    "quick_view_modal": "Fast preview dialog on product cards with size selection and rapid cart addition",
+    "search_overlay": "Instant live search modal with auto-suggest categories, recent searches, and instant product thumbnails"
+  },
+  "layouts": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "product_grid": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6",
+    "category_tiles": "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4",
+    "pdp_grid": "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12"
+  },
+  "media": {
+    "image_urls": {
+      "hero_banners": [
+        {
+          "title": "Lançamento Primavera / Alto Verão",
+          "subtitle": "FLUIDEZ, CORES VIBRANTES E ELEGÂNCIA CATARINENSE",
+          "tag": "NOVA COLEÇÃO 2026",
+          "cta": "VER LANÇAMENTOS",
+          "url": "https://images.unsplash.com/photo-1662532577856-e8ee8b138a8b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwyfHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBkcmVzc3xlbnwwfHx8fDE3OTA3OTQ3NjJ8MA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "title": "Seleção Superjeans — 50% OFF",
+          "subtitle": "MODELAGEM PERFEITA E TECNOLOGIA QUE VALORIZA AS CURVAS",
+          "tag": "OUTLET EXCLUSIVO",
+          "cta": "COMPRAR JEANS",
+          "url": "https://images.unsplash.com/photo-1714729382668-7bc3bb261662?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRlbmltJTIwamVhbnMlMjBmYXNoaW9ufGVufDB8fHx8MTc5MDc5NDc2Mnww&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "title": "Linha Beachwear Ibiza & Glam",
+          "subtitle": "BIQUÍNIS, MAIÔS E SAÍDAS DE PRAIA FEITAS PARA BRILHAR",
+          "tag": "BEACHWEAR",
+          "cta": "EXPLORAR BEACHWEAR",
+          "url": "https://images.unsplash.com/flagged/photo-1570700005880-4ecdb8595d4a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxiZWFjaHdlYXIlMjBzd2ltd2VhciUyMHdvbWFuJTIwdHJvcGljYWx8ZW58MHx8fHwxNzkwNzk0NzYyfDA&ixlib=rb-4.1.0&q=85"
+        }
+      ],
+      "categories": [
+        {
+          "name": "VESTIDOS",
+          "slug": "vestidos",
+          "url": "https://images.unsplash.com/photo-1568252542512-9fe8fe9c87bb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBkcmVzc3xlbnwwfHx8fDE3OTA3OTQ3NjJ8MA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "CALÇAS JEANS",
+          "slug": "calcas",
+          "url": "https://images.unsplash.com/photo-1602293589930-45aad59ba3ab?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGRlbmltJTIwamVhbnMlMjBmYXNoaW9ufGVufDB8fHx8MTc5MDc5NDc2Mnww&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "BLUSAS & CROPPEDS",
+          "slug": "blusas",
+          "url": "https://images.unsplash.com/photo-1612336307429-8a898d10e223?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHw0fHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBkcmVzc3xlbnwwfHx8fDE3OTA3OTQ3NjJ8MA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "BEACHWEAR",
+          "slug": "beachwear",
+          "url": "https://images.unsplash.com/photo-1591901559829-ce65d7eaca0a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxiZWFjaHdlYXIlMjBzd2ltd2VhciUyMHdvbWFuJTIwdHJvcGljYWx8ZW58MHx8fHwxNzkwNzk0NzYyfDA&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "SHORTS & SAIAS",
+          "slug": "shorts-e-saias",
+          "url": "https://images.unsplash.com/photo-1721637286605-ae9be19d681f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHw0fHx3b21lbiUyMGRlbmltJTIwamVhbnMlMjBmYXNoaW9ufGVufDB8fHx8MTc5MDc5NDc2Mnww&ixlib=rb-4.1.0&q=85"
+        },
+        {
+          "name": "OUTLET 50% OFF",
+          "slug": "outlet",
+          "url": "https://images.unsplash.com/photo-1601597565151-70c4020dc0e1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwzfHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBkcmVzc3xlbnwwfHx8fDE3OTA3OTQ3NjJ8MA&ixlib=rb-4.1.0&q=85"
+        }
+      ]
+    }
+  },
+  "motion": {
+    "page_transitions": "fade and slight translateY (0.2s ease-out)",
+    "card_hover": "scale-102 with smooth image zoom transition (transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1))",
+    "drawer_and_modals": "smooth slide from right (drawer) and scale-up fade (dialog) via motion/react",
+    "reduced_motion": "respects prefers-reduced-motion: reduce by disabling transform scale transitions"
+  },
+  "accessibility": {
+    "contrast_standard": "WCAG AA (minimum 4.5:1 for body and normal copy, APCA validated)",
+    "focus_rings": "focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2",
+    "aria_labels": "All icon-only buttons (cart trigger, search button, wishlist, mobile hamburger, close drawers) have explicit aria-label in pt-BR",
+    "data_testids": "Strict role-based kebab-case testids attached to all buttons, inputs, links, cart indicators, price blocks, and checkout tabs"
+  },
+  "instructions_to_main_agent": {
+    "brand_name": "GATABAKANA",
+    "brand_slogan": "Moda Feminina Autoral Catarinense Desde 2003",
+    "locale_formatting": {
+      "currency_formatter": "new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)",
+      "installment_text": "em até 6x de R$ XX,XX sem juros no cartão ou R$ XX,XX à vista no PIX (5% off)"
+    },
+    "key_promotions": {
+      "coupon_code": "GBVIP",
+      "coupon_discount": "10% de desconto no subtotal",
+      "pix_discount": "5% de desconto imediato",
+      "free_shipping_threshold": 499.00,
+      "free_shipping_regions": ["SC", "SP", "PR", "RS", "MG", "RJ"]
+    },
+    "components_to_build": [
+      "TopAnnouncementBar: Rotating news ticker with coupons and benefits",
+      "LuxuryHeader: Logo GATABAKANA, mega navigation (Novidades, Vestidos, Superjeans, Blusas, Beachwear, Outlet), live search input, customer account link, wishlist counter, cart drawer trigger with counter badge",
+      "HeroCarousel: Editorial banner carousel with auto-play, touch swipe, manual indicators, and direct shop CTAs",
+      "CategoryTiles: Circular or rounded editorial cards linking to category PLPs",
+      "ProductCard: High-fashion card with primary & secondary hover image swap, discount badge (-50%), color swatch dots, quick-add size selector, wishlist heart, formatted BRL price + 6x installments",
+      "ProductCarouselSection: Reusable section header (e.g. 'AS MAIS VENDIDAS', 'COLEÇÃO JEANS', 'TRENDS') with smooth horizontal scroll / drag",
+      "NewsletterGata: High-conversion email capture with 10% coupon instant unlock modal or toast",
+      "CartDrawer: Slide-out sheet showing items, quantity modifiers, free-shipping threshold meter, coupon GBVIP applicator, and direct 'Finalizar Compra' CTA",
+      "ProductListingPage: Category catalog with breadcrumb, sort dropdown (Mais Vendidos, Menor Preço, Maior Preço, Lançamentos), multi-filter facets (Tamanho, Linha, Cor, Preço), active filter pills, and product counter",
+      "ProductDetailPage: Multi-image thumbnail gallery, reference sku, pricing with PIX & card breakdown, size selector (PP, P, M, G, GG) with size chart modal, CEP shipping calculator widget with realistic Prazo de Entrega (Sedex / PAC / Frete Grátis), description and fabric composition tabs",
+      "CheckoutPage: Multi-step accordions for Dados Pessoais, Endereço de Entrega (com busca de CEP), Opção de Frete e Forma de Pagamento (PIX interativo com QR code e chave copia-e-cola, Cartão com seletor de parcelas até 6x)",
+      "OrderConfirmationPage: Order success page with generated code, recap, and WhatsApp share link",
+      "WhatsAppFloatingButton: Bottom-right fixed floating chat trigger",
+      "CookieConsentLGPD: Bottom floating cookie warning in pt-BR with accept/reject buttons"
+    ],
+    "backend_seed_requirements": "Seed at least 16 diverse realistic Gatabakana products spanning all lines (Superjeans, Trendy, Glam, Beachwear, Basic) with realistic BRL prices (e.g., R$ 199,90 to R$ 599,90), authentic product titles in Portuguese, color variants, size stocks, and high-fashion image URLs."
+  }
+}
